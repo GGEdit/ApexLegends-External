@@ -1,0 +1,15 @@
+﻿cl : コマンド ライン warning D9025: '/sdl-' より '/GS-' が優先されます。
+  Source.cpp
+f:\app01\project\game\apexlegends\apexlegends\apexlegends\source.cpp(25): warning C4244: '引数': 'float' から 'DWORD64' への変換です。データが失われる可能性があります。
+f:\app01\project\game\apexlegends\apexlegends\apexlegends\source.cpp(26): warning C4244: '引数': 'float' から 'DWORD64' への変換です。データが失われる可能性があります。
+f:\app01\project\game\apexlegends\apexlegends\apexlegends\source.cpp(27): warning C4244: '引数': 'float' から 'DWORD64' への変換です。データが失われる可能性があります。
+f:\app01\project\game\apexlegends\apexlegends\apexlegends\source.cpp(31): warning C4244: '引数': 'float' から 'DWORD64' への変換です。データが失われる可能性があります。
+f:\app01\project\game\apexlegends\apexlegends\apexlegends\source.cpp(31): warning C4056: 浮動小数点数の定数演算でオーバーフローしました。
+f:\app01\project\game\apexlegends\apexlegends\apexlegends\source.cpp(34): warning C4244: '引数': 'float' から 'DWORD64' への変換です。データが失われる可能性があります。
+f:\app01\project\game\apexlegends\apexlegends\apexlegends\source.cpp(34): warning C4056: 浮動小数点数の定数演算でオーバーフローしました。
+  コード生成しています。
+  0 of 73 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  コード生成が終了しました。
+  ApexLegends.vcxproj -> F:\app01\Project\Game\ApexLegends\ApexLegends\x64\Release\ApexLegends.exe
