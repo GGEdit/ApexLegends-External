@@ -11,16 +11,6 @@ DWORD ProcessId;
 DWORD64 BaseAddress;
 KeInterface Driver("\\\\.\\FuckEAC");
 
-INT GetEntityCount()
-{
-	return Driver.ReadVirtualMemory<INT>(ProcessId, BaseAddress + EntityCount_Offset);
-}
-
-DWORD64 GetEntityById(int Entity, DWORD64 EntityList)
-{
-	return Driver.ReadVirtualMemory<DWORD64>(ProcessId, EntityList + (Entity << 5));
-}
-
 VOID EnableHighlight(DWORD64 Entity, float r, float g, float b)
 {
 	//Enable Glow
@@ -38,6 +28,16 @@ VOID EnableHighlight(DWORD64 Entity, float r, float g, float b)
 
 	//Distance Max
 	Driver.WriteVirtualMemory(ProcessId, Entity + 0x2DC, FLT_MAX);
+}
+
+INT GetEntityCount()
+{
+	return Driver.ReadVirtualMemory<INT>(ProcessId, BaseAddress + EntityCount_Offset);
+}
+
+DWORD64 GetEntityById(int Entity, DWORD64 EntityList)
+{
+	return Driver.ReadVirtualMemory<DWORD64>(ProcessId, EntityList + (Entity << 5));
 }
 
 VOID OnAttach()
