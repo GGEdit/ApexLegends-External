@@ -40,44 +40,6 @@ VOID EnableHighlight(DWORD64 Entity, float r, float g, float b)
 	Driver.WriteVirtualMemory(ProcessId, Entity + 0x2DC, FLT_MAX);
 }
 
-BOOL IsSameTeam(DWORD64 LocalPlayer, DWORD64 Entity)
-{
-	DWORD myTeamId = Driver.ReadVirtualMemory<DWORD>(ProcessId, LocalPlayer + 0x3E4);
-	DWORD entityTeamNum = Driver.ReadVirtualMemory<DWORD>(ProcessId, Entity + 0x3E4);
-	if (myTeamId == entityTeamNum)
-		return TRUE;
-
-	return FALSE;
-}
-
-DWORD64 GetLocalPlayer()
-{
-	return Driver.ReadVirtualMemory<DWORD64>(ProcessId, BaseAddress + LocalPlayer_Offset);
-}
-
-DWORD64 GetLocalPlayerByEntityId(DWORD ProcessId, DWORD64 BaseAddress, DWORD64 EntityList)
-{
-	int LocalPlayerId = Driver.ReadVirtualMemory<int>(ProcessId, BaseAddress + LocalPlayerId_Offset);
-	int EntityCount = GetEntityCount();
-	printf("%d\n", EntityCount);
-	for (int i = 0; i < EntityCount; i++)
-	{
-		DWORD64 Entity = GetEntityById(EntityList, i);
-		if (!Entity)
-			continue;
-
-		DWORD64 EntityId = Driver.ReadVirtualMemory<DWORD64>(ProcessId, Entity + 0x8);
-		DWORD64 EntityHandle = Driver.ReadVirtualMemory<DWORD64>(ProcessId, Entity + 0x500);
-		DWORD64 EntityName = Driver.ReadVirtualMemory<DWORD64>(ProcessId, EntityHandle);
-		char *Identifier = reinterpret_cast<char*>(EntityName);
-		const char* add = reinterpret_cast<const char*>(&Identifier);
-		if (!strcmp(add, "player") && LocalPlayerId == EntityId)
-			return Entity;
-	}
-
-	return NULL;
-}
-
 VOID OnAttach()
 {
 	DWORD64 BaseEntity = NULL;
@@ -89,12 +51,6 @@ VOID OnAttach()
 		BaseEntity = Driver.ReadVirtualMemory<DWORD64>(ProcessId, EntityList);
 	}
 	printf("BaseEntity取得:%p\n", BaseEntity);
-
-	while (!LocalPlayer)
-	{
-		LocalPlayer = GetLocalPlayer();
-	}
-	printf("LocalPlayer取得:%p\n", LocalPlayer);
 
 	for (;;)
 	{
