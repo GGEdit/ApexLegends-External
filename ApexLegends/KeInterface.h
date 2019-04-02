@@ -11,16 +11,18 @@ using namespace std;
 typedef struct _KERNEL_READ_REQUEST
 {
 	ULONG ProcessId;
+	ULONG AgentId;
 	ULONGLONG Address;
-	ULONGLONG Response;
+	PVOID Buffer;
 	SIZE_T Size;
 } KERNEL_READ_REQUEST, *PKERNEL_READ_REQUEST;
 
 typedef struct _KERNEL_WRITE_REQUEST
 {
 	ULONG ProcessId;
+	ULONG AgentId;
 	ULONGLONG Address;
-	ULONGLONG Value;
+	PVOID Buffer;
 	SIZE_T Size;
 } KERNEL_WRITE_REQUEST, *PKERNEL_WRITE_REQUEST;
 
@@ -29,6 +31,20 @@ typedef struct _KERNEL_GET_MODULE_REQUEST
 	ULONG ProcessId;
 	PVOID Address;
 } KERNEL_GET_MODULE_REQUEST, *PKERNEL_GET_MODULE_REQUEST;
+
+typedef struct _Vector3
+{
+	float x;
+	float y;
+	float z;
+} Vector3;
+
+typedef struct _RGB
+{
+	float x;
+	float y;
+	float z;
+} RGB;
 
 DWORD GetPId(string processName)
 {
@@ -69,38 +85,41 @@ public:
 		hDriver = CreateFileA(RegistryPath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
 	}
 
-	DWORD64 ReadVirtualMemory(ULONG ProcessId, DWORD64 ReadAddress, SIZE_T Size)
+	template <typename T>
+	T ReadVirtualMemory(ULONG ProcessId, DWORD64 ReadAddress)
 	{
 		if (hDriver == INVALID_HANDLE_VALUE)
-			return false;
+			return FALSE;
 
 		KERNEL_READ_REQUEST ReadRequest;
 		ReadRequest.ProcessId = ProcessId;
+		ReadRequest.AgentId = GetCurrentProcessId();
 		ReadRequest.Address = ReadAddress;
-		ReadRequest.Size = Size;
+		ReadRequest.Size = sizeof(T);
 
 		if (DeviceIoControl(hDriver, IO_READ_REQUEST, &ReadRequest, sizeof(ReadRequest), &ReadRequest, sizeof(ReadRequest), 0, 0))
-			return ReadRequest.Response;
+			return reinterpret_cast<T>(ReadRequest.Buffer);
 
-		return 0;
+		return FALSE;
 	}
 
-
-	bool WriteVirtualMemory(ULONG ProcessId, DWORD64 WriteAddress, DWORD64 WriteValue, SIZE_T WriteSize)
+	template <typename T>
+	BOOL WriteVirtualMemory(ULONG ProcessId, DWORD64 WriteAddress, T WriteValue)
 	{
 		if (hDriver == INVALID_HANDLE_VALUE)
 			return false;
 
 		KERNEL_WRITE_REQUEST  WriteRequest;
 		WriteRequest.ProcessId = ProcessId;
+		WriteRequest.AgentId = GetCurrentProcessId();
 		WriteRequest.Address = WriteAddress;
-		WriteRequest.Value = WriteValue;
-		WriteRequest.Size = WriteSize;
+		WriteRequest.Buffer = reinterpret_cast<PVOID>(&WriteValue);
+		WriteRequest.Size = sizeof(WriteValue);
 
 		if (DeviceIoControl(hDriver, IO_WRITE_REQUEST, &WriteRequest, sizeof(WriteRequest), 0, 0, 0, 0))
-			return true;
+			return TRUE;
 
-		return false;
+		return FALSE;
 	}
 
 	PVOID GetClientModule(DWORD processId)
