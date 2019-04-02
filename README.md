@@ -1,7 +1,7 @@
 # ApexLegends ExternalCheat
 ApexLegends External Cheat
 
-### Include
+### 内容
 GlowESP
 
 ### 概要
