@@ -91,7 +91,7 @@ VOID Load()
 	OnAttach();
 }
 
-int main()
+INT main()
 {
 	Load();
 	system("pause");
