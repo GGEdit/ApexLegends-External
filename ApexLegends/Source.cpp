@@ -58,7 +58,7 @@ VOID OnAttach()
 		for (int i = 0; i < EntityCount; i++)
 		{
 			DWORD64 Entity = GetEntityById(i, EntityList);
-			if (Entity == NULL)
+			if (!Entity)
 				continue;
 
 			DWORD64 EntityHandle = Driver.ReadVirtualMemory<DWORD64>(ProcessId, Entity + 0x500);
