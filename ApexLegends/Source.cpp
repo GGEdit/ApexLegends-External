@@ -44,17 +44,18 @@ VOID OnAttach()
 {
 	DWORD64 BaseEntity = NULL;
 	DWORD64 EntityList = BaseAddress + EntityList_Offset;
-	DWORD64 LocalPlayer = NULL;
+	INT EntityCount = 0;
 
 	while (!BaseEntity)
 	{
 		BaseEntity = Driver.ReadVirtualMemory<DWORD64>(ProcessId, EntityList);
 	}
 	printf("BaseEntity取得:%p\n", BaseEntity);
-
+	
 	for (;;)
 	{
-		for (int i = 0; i < 100; i++)
+		EntityCount = GetEntityCount();
+		for (int i = 0; i < EntityCount; i++)
 		{
 			DWORD64 Entity = GetEntityById(i, EntityList);
 			if (Entity == NULL)
