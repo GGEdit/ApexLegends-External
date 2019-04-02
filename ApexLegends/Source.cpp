@@ -23,7 +23,7 @@ VOID EnableHighlight(DWORD64 Entity, FLOAT r, FLOAT g, FLOAT b)
 	Driver.WriteVirtualMemory(ProcessId, Entity + 0x1B8, b);
 
 	//Glow Time Max
-	for (int offset = 0x2B0; offset <= 0x2C8; offset += 0x4)
+	for (INT offset = 0x2B0; offset <= 0x2C8; offset += 0x4)
 		Driver.WriteVirtualMemory(ProcessId, Entity + offset, FLT_MAX);
 
 	//Distance Max
