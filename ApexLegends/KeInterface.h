@@ -43,7 +43,7 @@ public:
 	template <typename T>
 	T ReadVirtualMemory(ULONG ProcessId, DWORD64 ReadAddress)
 	{
-		if (hDriver == INVALID_HANDLE_VALUE)
+		if (!IsDriver())
 			return FALSE;
 
 		KERNEL_READ_REQUEST ReadRequest;
@@ -61,8 +61,8 @@ public:
 	template <typename T>
 	BOOL WriteVirtualMemory(ULONG ProcessId, DWORD64 WriteAddress, T WriteValue)
 	{
-		if (hDriver == INVALID_HANDLE_VALUE)
-			return false;
+		if (!IsDriver())
+			return FALSE;
 
 		KERNEL_WRITE_REQUEST  WriteRequest;
 		WriteRequest.ProcessId = ProcessId;
