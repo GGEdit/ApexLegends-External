@@ -1,5 +1,4 @@
 #include <Windows.h>
-using namespace std;
 
 #define IO_READ_REQUEST CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0701, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 #define IO_WRITE_REQUEST CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0702, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
@@ -36,14 +35,14 @@ private:
 	HANDLE hDriver;
 public:
 	KeInterface(LPCSTR RegistryPath);
-	BOOL IsDriver();
+	BOOL IsInvalidDriver();
 	PVOID GetClientModule(DWORD processId);
 	BOOL ClearUnloadedDriver();
 
 	template <typename T>
 	T ReadVirtualMemory(ULONG ProcessId, DWORD64 ReadAddress)
 	{
-		if (!IsDriver())
+		if (IsInvalidDriver())
 			return FALSE;
 
 		KERNEL_READ_REQUEST ReadRequest;
@@ -61,7 +60,7 @@ public:
 	template <typename T>
 	BOOL WriteVirtualMemory(ULONG ProcessId, DWORD64 WriteAddress, T WriteValue)
 	{
-		if (!IsDriver())
+		if (IsInvalidDriver())
 			return FALSE;
 
 		KERNEL_WRITE_REQUEST  WriteRequest;
