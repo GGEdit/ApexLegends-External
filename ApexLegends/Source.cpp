@@ -11,7 +11,7 @@
 DWORD ProcessId = NULL;
 DWORD64 BaseAddress = NULL;
 DWORD64 EntityList = NULL;
-KeInterface Driver("\\\\.\\FuckEAC");
+KeInterface Driver("\\\\.\\*******");
 
 INT GetEntityCount()
 {
