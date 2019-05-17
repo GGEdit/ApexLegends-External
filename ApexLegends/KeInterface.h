@@ -5,6 +5,13 @@
 #define IO_GET_MODULE_REQUEST CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0703, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 #define IO_CLEAR_UNLOADEDDRIVER_REQUEST CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0704, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 
+typedef struct _Vector3
+{
+	float X;
+	float Y;
+	float Z;
+} Vector3;
+
 typedef struct _KERNEL_READ_REQUEST
 {
 	ULONG ProcessId;
@@ -33,8 +40,10 @@ class KeInterface
 {
 private:
 	HANDLE hDriver;
+	LPCSTR RegistryPath;
 public:
 	KeInterface(LPCSTR RegistryPath);
+	void ConnectDriver();
 	BOOL IsInvalidDriver();
 	PVOID GetClientModule(DWORD processId);
 	BOOL ClearUnloadedDriver();
