@@ -5,23 +5,20 @@
 #define IO_GET_MODULE_REQUEST CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0703, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 #define IO_CLEAR_UNLOADEDDRIVER_REQUEST CTL_CODE(FILE_DEVICE_UNKNOWN, 0x0704, METHOD_BUFFERED, FILE_SPECIAL_ACCESS)
 
-typedef struct _KERNEL_READ_REQUEST
+typedef struct _Vector3
 {
-	ULONG ProcessId;
-	ULONG AgentId;
-	ULONGLONG Address;
-	PVOID Buffer;
-	SIZE_T Size;
-} KERNEL_READ_REQUEST, *PKERNEL_READ_REQUEST;
+	float X;
+	float Y;
+	float Z;
+} Vector3;
 
-typedef struct _KERNEL_WRITE_REQUEST
+typedef struct _KERNEL_COPY_MEMORY_REQUEST
 {
 	ULONG ProcessId;
-	ULONG AgentId;
 	ULONGLONG Address;
 	PVOID Buffer;
 	SIZE_T Size;
-} KERNEL_WRITE_REQUEST, *PKERNEL_WRITE_REQUEST;
+} KERNEL_COPY_MEMORY_REQUEST, *PKERNEL_COPY_MEMORY_REQUEST;
 
 typedef struct _KERNEL_GET_MODULE_REQUEST
 {
@@ -47,13 +44,12 @@ public:
 		if (IsInvalidDriver())
 			return FALSE;
 
-		KERNEL_READ_REQUEST ReadRequest;
+		KERNEL_COPY_MEMORY_REQUEST ReadRequest;
 		ReadRequest.ProcessId = ProcessId;
-		ReadRequest.AgentId = GetCurrentProcessId();
 		ReadRequest.Address = ReadAddress;
 		ReadRequest.Size = sizeof(T);
 
-		if (DeviceIoControl(hDriver, IO_READ_REQUEST, &ReadRequest, sizeof(ReadRequest), &ReadRequest, sizeof(ReadRequest), 0, 0))
+		if (DeviceIoControl(hDriver, IO_READ_REQUEST, &ReadRequest, sizeof(ReadRequest), &ReadRequest, sizeof(ReadRequest), NULL, NULL))
 			return reinterpret_cast<T>(ReadRequest.Buffer);
 
 		return FALSE;
@@ -65,14 +61,13 @@ public:
 		if (IsInvalidDriver())
 			return FALSE;
 
-		KERNEL_WRITE_REQUEST  WriteRequest;
+		KERNEL_COPY_MEMORY_REQUEST  WriteRequest;
 		WriteRequest.ProcessId = ProcessId;
-		WriteRequest.AgentId = GetCurrentProcessId();
 		WriteRequest.Address = WriteAddress;
 		WriteRequest.Buffer = reinterpret_cast<PVOID>(&WriteValue);
 		WriteRequest.Size = sizeof(WriteValue);
 
-		if (DeviceIoControl(hDriver, IO_WRITE_REQUEST, &WriteRequest, sizeof(WriteRequest), 0, 0, 0, 0))
+		if (DeviceIoControl(hDriver, IO_WRITE_REQUEST, &WriteRequest, sizeof(WriteRequest), NULL, NULL, NULL, NULL))
 			return TRUE;
 
 		return FALSE;
