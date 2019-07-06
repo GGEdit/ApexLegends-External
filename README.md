@@ -5,5 +5,5 @@ ApexLegends External Cheat
 GlowESP
 
 ## 概要
-ObRegisterCallbacksでユーザーモードからプロセスハンドルが取得できないため
-ゲームプロセスに対して読み書き(RPM/WPM)が可能なカーネルドライバが必要（ゲーム起動前にロードさせる）
+EasyAntiCheatによりObRegisterCallbacksがフックされているため、ユーザーモードからプロセスハンドルが取得できないので
+ゲームプロセスに対してRPM/WPMが可能なカーネルドライバが必要
