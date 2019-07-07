@@ -105,7 +105,6 @@ VOID Load()
 	{
 		Sleep(100);
 	}
-	printf("CheatLoaded..ok!\n");
 
 	OnAttach();
 }
