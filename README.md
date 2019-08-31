@@ -1,4 +1,4 @@
-# ApexLegends ExternalCheat
+# ApexLegends External
 ApexLegends External Cheat
 
 ## 内容
