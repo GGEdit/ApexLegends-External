@@ -5,5 +5,5 @@ ApexLegends External
 GlowESP
 
 ## 概要
-EasyAntiCheatによりObRegisterCallbacksがフックされるため、ユーザーモードからプロセスハンドルが取得できないので
+EACによりObRegisterCallbacksがフックされるため、ユーザーモードからプロセスハンドルが取得できないので
 ゲームプロセスに対してRPM/WPMが可能なring0ドライバが必要
