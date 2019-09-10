@@ -1,118 +1,118 @@
-#include "KeInterface.h"
-#include "Process.h"
+#include "Apex.h"
 
-#define EntityList_Offset 0x1F9AE68
-#define EntityCount_Offset 0xC00B508
-#define LocalPlayer_Offset 0x234DEE8
-#define PlayerNameList_Offset 0xC1BBA40
-#define BulletSpeed_Offset 0x1BB4
-#define TeamId_Offset 0x3E4
-
-DWORD ProcessId = NULL;
-DWORD64 BaseAddress = NULL;
-DWORD64 EntityList = NULL;
-KeInterface Driver("\\\\.\\*******");
-
-INT GetEntityCount()
+VOID OnAttach(DWORD ProcessId, DWORD64 BaseAddress)
 {
-	return Driver.ReadVirtualMemory<INT>(ProcessId, BaseAddress + EntityCount_Offset);
-}
-
-DWORD64 GetEntityById(int Entity, DWORD64 EntityList)
-{
-	return Driver.ReadVirtualMemory<DWORD64>(ProcessId, EntityList + (Entity << 5));
-}
-
-VOID EnableHighlight(DWORD64 Entity, FLOAT r, FLOAT g, FLOAT b)
-{
-	Driver.WriteVirtualMemory(ProcessId, Entity + 0x380, 1);
-	Driver.WriteVirtualMemory(ProcessId, Entity + 0x2F0, 1);
-	Driver.WriteVirtualMemory(ProcessId, Entity + 0x1B0, r);
-	Driver.WriteVirtualMemory(ProcessId, Entity + 0x1B4, g);
-	Driver.WriteVirtualMemory(ProcessId, Entity + 0x1B8, b);
-	for (INT offset = 0x2B0; offset <= 0x2C8; offset += 0x4)
-		Driver.WriteVirtualMemory(ProcessId, Entity + offset, FLT_MAX);
-
-	Driver.WriteVirtualMemory(ProcessId, Entity + 0x2DC, FLT_MAX);
-}
-
-BOOL IsSameTeam(DWORD64 LocalPlayer, DWORD64 Entity)
-{
-	DWORD myTeamId = Driver.ReadVirtualMemory<DWORD>(ProcessId, LocalPlayer + TeamId_Offset);
-	DWORD entityTeamId = Driver.ReadVirtualMemory<DWORD>(ProcessId, Entity + TeamId_Offset);
-	if (myTeamId == entityTeamId)
-		return TRUE;
-
-	return FALSE;
-}
-
-DWORD64 GetLocalPlayer()
-{
-	return Driver.ReadVirtualMemory<DWORD64>(ProcessId, BaseAddress + LocalPlayer_Offset);
-}
-
-VOID OnAttach()
-{
+	DWORD64 EntityList = BaseAddress + ENTITY_LIST_OFFSET;
+	Entity entity = Entity::CreateInstance(ProcessId, BaseAddress);
+	Weapon weapon = Weapon::CreateInstance(ProcessId, EntityList);
+	Glow glow = Glow::CreateInstance(ProcessId, EntityList);
 	DWORD64 LocalPlayer = NULL;
+
+	while (!Driver.ReadVirtualMemory<DWORD64>(ProcessId, EntityList))
+	{
+		Sleep(100);
+	}
 	for (;;)
 	{
-		LocalPlayer = GetLocalPlayer();
+		LocalPlayer = entity.GetLocalPlayer();
 		if (!LocalPlayer)
 			continue;
 
-		for (INT i = 0; i < GetEntityCount(); i++)
+		weapon.NoRecoil(LocalPlayer);
+		//weapon.BulletSpeed(LocalPlayer);
+
+		DWORD64 Next = EntityList;
+		int emergencyExit = 0;
+		while (Next != NULL && emergencyExit < 10000)
 		{
-			DWORD64 Entity = GetEntityById(i, EntityList);
-			if (Entity == NULL)
+			emergencyExit++;
+			DWORD64 Entity = Driver.ReadVirtualMemory<DWORD64>(ProcessId, Next);
+			Next = Driver.ReadVirtualMemory<DWORD64>(ProcessId, Next + 0x18);
+			if (!Entity)
 				continue;
 
-			DWORD64 EntityHandle = Driver.ReadVirtualMemory<DWORD64>(ProcessId, Entity + 0x500);
+			DWORD64 EntityHandle = Driver.ReadVirtualMemory<DWORD64>(ProcessId, Entity + ENTITY_HANDLE_OFFSET);
 			DWORD64 EntityName = Driver.ReadVirtualMemory<DWORD64>(ProcessId, EntityHandle);
-			if (EntityName == 0x0000726579616c70
-				&& LocalPlayer != Entity
-				&& !IsSameTeam(LocalPlayer, Entity))
+			char *p = Driver.ReadVirtualMemory<char*>(ProcessId, EntityHandle);
+			const char *add = reinterpret_cast<const char*>(&p);
+			string str = add;
+			if (str.find("prop_sur") != string::npos)
 			{
-				EnableHighlight(Entity, 0.0f, 0.0f, 125.f);
+				int lootId = entity.GetLootID(Entity);
+				if (lootId == LOOT_LIST::R301
+					|| lootId == LOOT_LIST::R99
+					|| lootId == LOOT_LIST::WINGMAN)
+				{
+					//Weapon
+					glow.EnableItemHighlight(Entity, 255.0f, 255.0f, 255.0f);
+				}
+				else if (lootId == LOOT_LIST::LIGHT_ROUNDS)
+				{
+					//AMMO
+					glow.EnableItemHighlight(Entity, 0.0f, 255.0f, 0.0f);
+				}
+				else if (lootId == LOOT_LIST::BACKPACK_LV2
+					|| lootId == LOOT_LIST::ARMOR_LV2
+					|| lootId == LOOT_LIST::HEAVY_MAG_LV2
+					|| lootId == LOOT_LIST::LIGHT_MAG_LV2)
+				{
+					//LV2 Item
+					glow.EnableItemHighlight(Entity, 0.0f, 75.0f, 187.0f);
+				}
+				else if (lootId == LOOT_LIST::ARMOR_LV3
+					|| lootId == LOOT_LIST::BACKPACK_LV3
+					|| lootId == LOOT_LIST::HEAVY_MAG_LV3
+					|| lootId == LOOT_LIST::LIGHT_MAG_LV3
+					|| lootId == LOOT_LIST::BARREL_LV3
+					|| lootId == LOOT_LIST::STOCK_LV3
+					|| lootId == LOOT_LIST::HAMMERPOINT
+					|| lootId == LOOT_LIST::DISRUPTOR)
+				{
+					//LV3 Item
+					glow.EnableItemHighlight(Entity, 226.0f, 175.0f, 255.0f);
+				}
+				else if (lootId == LOOT_LIST::ARMOR_LV4 ||
+					lootId == LOOT_LIST::BACKPACK_LV4 ||
+					lootId == LOOT_LIST::HELMET_LV4 ||
+					lootId == LOOT_LIST::KNOCKDOWN_LV4 ||
+					lootId == LOOT_LIST::BARREL_LV4)
+				{
+					//LV4 Item
+					glow.EnableItemHighlight(Entity, 255.0f, 175.0f, 64.0f);
+				}
+			}
+			if (str == "player"
+				&& LocalPlayer != Entity
+				&& !entity.IsSameTeam(LocalPlayer, Entity))
+			{
+				glow.EnableHighlight(Entity, 125.0f, 0.0f, 0.0f);
 			}
 		}
-		Sleep(100);
 	}
 }
 
-VOID Load()
+int main()
 {
+	DWORD ProcessId = NULL;
+	DWORD64 BaseAddress = NULL;
+	Driver = KeInterface::CreateInstance("***");
 	if (Driver.IsInvalidDriver())
 	{
-		system("***********************");
+		system("***********");
 		Driver.ConnectDriver();
 	}
-
-	printf("Waiting for ApexLegends..\n");
-	while ((ProcessId = GetPId("r5apex.exe")) == NULL)
+	while ((ProcessId = GetPId("*****.exe")) == NULL)
 	{
 		Sleep(100);
 	}
-	printf("ProcessId:%d\n", ProcessId);
+	printf("Found GameProcess..!\n");
 
 	while ((BaseAddress = reinterpret_cast<DWORD64>(Driver.GetClientModule(ProcessId))) == NULL)
 	{
 		Sleep(100);
 	}
-	printf("ModuleBase:0x%p\n", BaseAddress);
-
-	EntityList = BaseAddress + EntityList_Offset;
-	while (!Driver.ReadVirtualMemory<DWORD64>(ProcessId, EntityList))
-	{
-		Sleep(100);
-	}
-
-	OnAttach();
-}
-
-int main()
-{
-	Load();
-	system("pause");
+	printf("ModuleBase:%p\n", BaseAddress);
+	OnAttach(ProcessId, BaseAddress);
 
 	return 0;
 }
