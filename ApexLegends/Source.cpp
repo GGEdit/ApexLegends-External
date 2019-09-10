@@ -32,11 +32,8 @@ VOID OnAttach(DWORD ProcessId, DWORD64 BaseAddress)
 				continue;
 
 			DWORD64 EntityHandle = Driver.ReadVirtualMemory<DWORD64>(ProcessId, Entity + ENTITY_HANDLE_OFFSET);
-			DWORD64 EntityName = Driver.ReadVirtualMemory<DWORD64>(ProcessId, EntityHandle);
-			char *p = Driver.ReadVirtualMemory<char*>(ProcessId, EntityHandle);
-			const char *add = reinterpret_cast<const char*>(&p);
-			string str = add;
-			if (str.find("prop_sur") != string::npos)
+			string EntityName = Driver.ReadVirtualMemoryString(ProcessId, EntityHandle);
+			if (EntityName.find("prop_sur") != string::npos)
 			{
 				int lootId = entity.GetLootID(Entity);
 				if (lootId == LOOT_LIST::R301
@@ -81,7 +78,7 @@ VOID OnAttach(DWORD ProcessId, DWORD64 BaseAddress)
 					glow.EnableItemHighlight(Entity, 255.0f, 175.0f, 64.0f);
 				}
 			}
-			if (str == "player"
+			if (EntityName == "player"
 				&& LocalPlayer != Entity
 				&& !entity.IsSameTeam(LocalPlayer, Entity))
 			{
@@ -95,13 +92,13 @@ int main()
 {
 	DWORD ProcessId = NULL;
 	DWORD64 BaseAddress = NULL;
-	Driver = KeInterface::CreateInstance("***");
+	Driver = KeInterface::CreateInstance("\\\\.\\******");
 	if (Driver.IsInvalidDriver())
 	{
-		system("***********");
+		system("***");
 		Driver.ConnectDriver();
 	}
-	while ((ProcessId = GetPId("*****.exe")) == NULL)
+	while ((ProcessId = GetPId("***.exe")) == NULL)
 	{
 		Sleep(100);
 	}
