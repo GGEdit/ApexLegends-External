@@ -2,8 +2,7 @@
 
 VOID OnAttach(DWORD ProcessId, DWORD64 BaseAddress)
 {
-	DWORD64 EntityList = BaseAddress + ENTITY_LIST_OFFSET;
-	Ents ents = Ents::CreateInstance(Driver, ProcessId, BaseAddress, EntityList);
+	Ents ents = Ents::CreateInstance(Driver, ProcessId, BaseAddress);
 	Weapon weapon = Weapon::CreateInstance(Driver, ProcessId);
 	Glow glow = Glow::CreateInstance(Driver, ProcessId);
 	Aimbot aimbot = Aimbot::CreateInstance(Driver, ProcessId, BaseAddress);
