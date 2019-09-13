@@ -22,7 +22,7 @@ VOID OnAttach(DWORD ProcessId, DWORD64 BaseAddress)
 			}
 			else if (!entity[i].IsPlayer)
 			{
-				int lootId = ents.GetLootID(entity[i].Address);
+				INT lootId = entity[i].LootId;
 				if (lootId == LOOT_LIST::R301
 					|| lootId == LOOT_LIST::R99
 					|| lootId == LOOT_LIST::WINGMAN)
