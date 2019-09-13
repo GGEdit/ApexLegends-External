@@ -3,50 +3,38 @@
 VOID OnAttach(DWORD ProcessId, DWORD64 BaseAddress)
 {
 	DWORD64 EntityList = BaseAddress + ENTITY_LIST_OFFSET;
-	Entity entity = Entity::CreateInstance(ProcessId, BaseAddress);
-	Weapon weapon = Weapon::CreateInstance(ProcessId, EntityList);
-	Glow glow = Glow::CreateInstance(ProcessId, EntityList);
-	DWORD64 LocalPlayer = NULL;
-
-	while (!Driver.ReadVirtualMemory<DWORD64>(ProcessId, EntityList))
-	{
-		Sleep(100);
-	}
+	Ents ents = Ents::CreateInstance(Driver, ProcessId, BaseAddress, EntityList);
+	Weapon weapon = Weapon::CreateInstance(Driver, ProcessId);
+	Glow glow = Glow::CreateInstance(Driver, ProcessId);
+	Aimbot aimbot = Aimbot::CreateInstance(Driver, ProcessId, BaseAddress);
+	vector<Entity> entity;
+	LocalPlayer localPlayer;
 	for (;;)
 	{
-		LocalPlayer = entity.GetLocalPlayer();
-		if (!LocalPlayer)
+		if (!ents.IsEntityList())
 			continue;
 
-		weapon.NoRecoil(LocalPlayer);
-		//weapon.BulletSpeed(LocalPlayer);
-
-		DWORD64 Next = EntityList;
-		int emergencyExit = 0;
-		while (Next != NULL && emergencyExit < 10000)
+		ents.Update(&entity, &localPlayer);
+		weapon.NoRecoil(localPlayer);
+		for (int i = 0; i < entity.size(); i++)
 		{
-			emergencyExit++;
-			DWORD64 Entity = Driver.ReadVirtualMemory<DWORD64>(ProcessId, Next);
-			Next = Driver.ReadVirtualMemory<DWORD64>(ProcessId, Next + 0x18);
-			if (!Entity)
-				continue;
-
-			DWORD64 EntityHandle = Driver.ReadVirtualMemory<DWORD64>(ProcessId, Entity + ENTITY_HANDLE_OFFSET);
-			string EntityName = Driver.ReadVirtualMemoryString(ProcessId, EntityHandle);
-			if (EntityName.find("prop_sur") != string::npos)
+			if (entity[i].IsPlayer && !entity[i].IsTeam) {
+				glow.EnableHighlight(entity[i].Address, 125.0f, 0.0f, 0.0f);
+			}
+			else if (!entity[i].IsPlayer)
 			{
-				int lootId = entity.GetLootID(Entity);
+				int lootId = ents.GetLootID(entity[i].Address);
 				if (lootId == LOOT_LIST::R301
 					|| lootId == LOOT_LIST::R99
 					|| lootId == LOOT_LIST::WINGMAN)
 				{
 					//Weapon
-					glow.EnableItemHighlight(Entity, 255.0f, 255.0f, 255.0f);
+					glow.EnableItemHighlight(entity[i].Address, 255.0f, 255.0f, 255.0f);
 				}
 				else if (lootId == LOOT_LIST::LIGHT_ROUNDS)
 				{
 					//AMMO
-					glow.EnableItemHighlight(Entity, 0.0f, 255.0f, 0.0f);
+					glow.EnableItemHighlight(entity[i].Address, 0.0f, 255.0f, 0.0f);
 				}
 				else if (lootId == LOOT_LIST::BACKPACK_LV2
 					|| lootId == LOOT_LIST::ARMOR_LV2
@@ -54,7 +42,7 @@ VOID OnAttach(DWORD ProcessId, DWORD64 BaseAddress)
 					|| lootId == LOOT_LIST::LIGHT_MAG_LV2)
 				{
 					//LV2 Item
-					glow.EnableItemHighlight(Entity, 0.0f, 75.0f, 187.0f);
+					glow.EnableItemHighlight(entity[i].Address, 0.0f, 75.0f, 187.0f);
 				}
 				else if (lootId == LOOT_LIST::ARMOR_LV3
 					|| lootId == LOOT_LIST::BACKPACK_LV3
@@ -66,7 +54,7 @@ VOID OnAttach(DWORD ProcessId, DWORD64 BaseAddress)
 					|| lootId == LOOT_LIST::DISRUPTOR)
 				{
 					//LV3 Item
-					glow.EnableItemHighlight(Entity, 226.0f, 175.0f, 255.0f);
+					glow.EnableItemHighlight(entity[i].Address, 226.0f, 175.0f, 255.0f);
 				}
 				else if (lootId == LOOT_LIST::ARMOR_LV4 ||
 					lootId == LOOT_LIST::BACKPACK_LV4 ||
@@ -75,14 +63,8 @@ VOID OnAttach(DWORD ProcessId, DWORD64 BaseAddress)
 					lootId == LOOT_LIST::BARREL_LV4)
 				{
 					//LV4 Item
-					glow.EnableItemHighlight(Entity, 255.0f, 175.0f, 64.0f);
+					glow.EnableItemHighlight(entity[i].Address, 255.0f, 175.0f, 64.0f);
 				}
-			}
-			if (EntityName == "player"
-				&& LocalPlayer != Entity
-				&& !entity.IsSameTeam(LocalPlayer, Entity))
-			{
-				glow.EnableHighlight(Entity, 125.0f, 0.0f, 0.0f);
 			}
 		}
 	}
